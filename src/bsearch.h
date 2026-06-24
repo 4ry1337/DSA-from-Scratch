@@ -5,6 +5,8 @@
 #include <optional>
 #include <vector>
 
+namespace dsa {
+
 template <typename Comparable>
 std::optional<std::size_t> binary_search(const std::vector<Comparable> &vec,
                                          const Comparable &q) {
@@ -26,5 +28,7 @@ std::optional<std::size_t> binary_search(const std::vector<Comparable> &vec,
 
   return std::nullopt;
 }
+
+} // namespace dsa
 
 #endif // !BSEARCH_H_
