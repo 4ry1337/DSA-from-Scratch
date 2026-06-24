@@ -1,14 +1,20 @@
-#include "bsearch.h"
+#include "vector.h"
 #include <iostream>
-#include <vector>
 
 int main() {
-  std::vector<int> vec = {0, 1, 2, 3, 4, 12, 13, 14};
-  auto result = dsa::binary_search(vec, 42);
-  if (result.has_value()) {
-    std::cout << result.value() << std::endl;
-  } else {
-    std::cout << "NOT FOUND" << std::endl;
+  dsa::Vector<int> vec{};
+  for (int i{}; i < 100; i++) {
+    vec.push_back(i);
   }
+
+  std::cout << vec.size() << std::endl;
+  std::cout << vec.capacity() << std::endl;
+  std::cout << vec.back() << std::endl;
+
+  for (auto iter = vec.begin(); iter != vec.end(); iter++) {
+    std::cout << *iter << ", ";
+  }
+  std::cout << std::endl;
+
   return 0;
 }
