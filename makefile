@@ -6,7 +6,7 @@ SRC_DIRS := ./src
 DEBUG_FLAGS := -g3 -O0
 RELEASE_FLAGS := -O3 -DNDEBUG
 
-CXXFLAGS := -std=c++23 -Wall -Wextra -Wpedantic $(DEBUG_FLAGS)
+CXXFLAGS := -Wall -Wextra -Wpedantic $(DEBUG_FLAGS)
 
 all: $(BUILD_DIR)/$(TARGET_EXEC)
 
