@@ -1,4 +1,5 @@
 TARGET_EXEC := main
+TEST_EXEC := test_runner
 
 BUILD_DIR := ./build
 SRC_DIRS := ./src
@@ -15,10 +16,12 @@ all: $(BUILD_DIR)/$(TARGET_EXEC)
 # Find all the C and C++ files we want to compile
 # Note the single quotes around the * expressions. The shell will incorrectly expand these otherwise, but we want to send the * directly to the find command.
 SRCS := $(shell find $(SRC_DIRS) -name '*.cpp' -or -name '*.c' -or -name '*.s')
+TEST_SRCS := $(shell find tests -name '*.cpp')
 
 # Prepends BUILD_DIR and appends .o to every src file
 # As an example, ./your_dir/hello.cpp turns into ./build/./your_dir/hello.cpp.o
 OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
+TEST_OBJS := $(TEST_SRCS:%=$(BUILD_DIR)/%.o)
 
 # String substitution (suffix version without %).
 # As an example, ./build/hello.cpp.o turns into ./build/hello.cpp.d
@@ -46,6 +49,15 @@ $(BUILD_DIR)/%.c.o: %.c
 $(BUILD_DIR)/%.cpp.o: %.cpp
 	mkdir -p $(dir $@)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
+
+# Build step for C++ source
+$(BUILD_DIR)/$(TEST_EXEC): $(TEST_OBJS)
+			$(CXX) $(TEST_OBJS) -o $@ -lgtest -lgtest_main
+
+test: $(BUILD_DIR)/$(TEST_EXEC)
+			./$(BUILD_DIR)/$(TEST_EXEC)
+
+.PHONY: test
 
 clean:
 	rm -rf $(BUILD_DIR)
