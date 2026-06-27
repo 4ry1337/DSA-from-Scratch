@@ -9,60 +9,59 @@ RELEASE_FLAGS := -O3 -DNDEBUG
 
 CXXFLAGS := -Wall -Wextra -Wpedantic $(DEBUG_FLAGS)
 
-all: $(BUILD_DIR)/$(TARGET_EXEC)
-
-.PHONY: all
-
-# Find all the C and C++ files we want to compile
-# Note the single quotes around the * expressions. The shell will incorrectly expand these otherwise, but we want to send the * directly to the find command.
 SRCS := $(shell find $(SRC_DIRS) -name '*.cpp' -or -name '*.c' -or -name '*.s')
 TEST_SRCS := $(shell find tests -name '*.cpp')
 
-# Prepends BUILD_DIR and appends .o to every src file
-# As an example, ./your_dir/hello.cpp turns into ./build/./your_dir/hello.cpp.o
 OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
 TEST_OBJS := $(TEST_SRCS:%=$(BUILD_DIR)/%.o)
 
-# String substitution (suffix version without %).
-# As an example, ./build/hello.cpp.o turns into ./build/hello.cpp.d
-DEPS := $(OBJS:.o=.d)
+DEPS := $(OBJS:.o=.d) $(TEST_OBJS:.o=.d)
 
-# Every folder in ./src will need to be passed to GCC so that it can find header files
 INC_DIRS := $(shell find $(SRC_DIRS) -type d)
-# Add a prefix to INC_DIRS. So moduleA would become -ImoduleA. GCC understands this -I flag
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
-# The -MMD and -MP flags together generate Makefiles for us!
-# These files will have .d instead of .o as the output.
+# -MMD -MP generate .d dependency files alongside .o files
 CPPFLAGS := $(INC_FLAGS) -MMD -MP
 
-# The final build step.
+.PHONY: all test lint fmt memcheck docs clean
+
+all: $(BUILD_DIR)/$(TARGET_EXEC) compile_commands.json
+
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
 	$(CXX) $(OBJS) -o $@ $(LDFLAGS)
 
-# Build step for C source
 $(BUILD_DIR)/%.c.o: %.c
 	mkdir -p $(dir $@)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-# Build step for C++ source
 $(BUILD_DIR)/%.cpp.o: %.cpp
 	mkdir -p $(dir $@)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MJ $(@:.o=.json) -c $< -o $@
 
-# Build step for C++ source
+compile_commands.json: $(OBJS) $(TEST_OBJS)
+	@printf '[\n' > $@
+	@find $(BUILD_DIR) -name '*.json' | xargs cat >> $@
+	@printf ']\n' >> $@
+
 $(BUILD_DIR)/$(TEST_EXEC): $(TEST_OBJS)
-			$(CXX) $(TEST_OBJS) -o $@ -lgtest -lgtest_main
+	$(CXX) $(TEST_OBJS) -o $@ -lgtest -lgtest_main
 
 test: $(BUILD_DIR)/$(TEST_EXEC)
-			./$(BUILD_DIR)/$(TEST_EXEC)
+	./$(BUILD_DIR)/$(TEST_EXEC)
 
-.PHONY: test
+lint:
+	clang-tidy $(SRCS)
+
+fmt:
+	clang-format -i $(SRCS) $(shell find $(SRC_DIRS) -name '*.h')
+
+memcheck: $(BUILD_DIR)/$(TARGET_EXEC)
+	valgrind --leak-check=full ./$(BUILD_DIR)/$(TARGET_EXEC)
+
+docs:
+	doxygen
 
 clean:
 	rm -rf $(BUILD_DIR)
 
-# Include the .d makefiles. The - at the front suppresses the errors of missing
-# Makefiles. Initially, all the .d files will be missing, and we don't want those
-# errors to show up.
 -include $(DEPS)
