@@ -59,8 +59,8 @@ template <typename Item> class List {
      * move constructor
      **/
     List(List &&rhs) noexcept
-        : m_size{rhs.m_size}, m_head{rhs.m_head}, // NOLINT(cppcoreguidelines-owning-memory)
-          m_tail{rhs.m_tail} {                    // NOLINT(cppcoreguidelines-owning-memory)
+        : m_head{rhs.m_head}, m_tail{rhs.m_tail}, // NOLINT(cppcoreguidelines-owning-memory)
+          m_size{rhs.m_size} {                    // NOLINT(cppcoreguidelines-owning-memory)
         rhs.m_head = nullptr;                     // NOLINT(cppcoreguidelines-owning-memory)
         rhs.m_tail = nullptr;                     // NOLINT(cppcoreguidelines-owning-memory)
         rhs.m_size = 0;

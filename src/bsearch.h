@@ -19,7 +19,9 @@ Result<std::size_t, std::size_t> binary_search(const Vector<Comparable> &vec, co
     while (size > 1) {
         std::size_t half = size / 2;
         std::size_t mid = base + half;
-        if (q > vec[mid]) {
+        if (vec[mid] == q) {
+            return Result<std::size_t, std::size_t>::ok(mid);
+        } else if (q > vec[mid]) {
             base = mid;
         }
         size -= half;

@@ -45,7 +45,7 @@ template <typename Item> class Vector {
      *
      * Complexity: O(n) time and space.
      */
-    Vector(Vector &rhs)
+    Vector(const Vector &rhs)
         : m_size(rhs.m_size), m_capacity(rhs.m_capacity), m_items(new Item[m_capacity]) {
         std::span<Item> view{m_items, m_size};
         std::span<Item> rhs_view{rhs.m_items, rhs.m_size};
@@ -93,15 +93,6 @@ template <typename Item> class Vector {
     }
 
     /**
-     * Destructor — releases the owned buffer.
-     *
-     * The only resource managed by Vector is the heap array `m_items`.
-     * `delete[] nullptr` is defined to be a no-op, so a moved-from Vector
-     * (whose pointer was nulled out) is safe to destroy.
-     */
-    ~Vector() { delete[] m_items; }
-
-    /**
      * Move assignment operator — swap internals, O(1).
      *
      * Swaps all three members with `rhs`.  The old resources of `*this` end up
@@ -117,6 +108,15 @@ template <typename Item> class Vector {
         return *this;
     }
 
+    /**
+     * Destructor — releases the owned buffer.
+     *
+     * The only resource managed by Vector is the heap array `m_items`.
+     * `delete[] nullptr` is defined to be a no-op, so a moved-from Vector
+     * (whose pointer was nulled out) is safe to destroy.
+     */
+    ~Vector() { delete[] m_items; }
+
     /** Changes the logical size to `new_size`, growing the buffer if needed. */
     void resize(std::size_t new_size) {
         if (new_size > m_capacity) {
@@ -131,7 +131,7 @@ template <typename Item> class Vector {
      * `new_capacity < m_size` (shrinking below live elements is a no-op).
      */
     void reserve(std::size_t new_capacity) {
-        if (new_capacity < m_size) {
+        if (new_capacity < m_capacity) {
             return;
         }
         std::span<Item> view{m_items, m_size};
@@ -157,7 +157,7 @@ template <typename Item> class Vector {
     }
 
     /** Returns true iff the vector contains no live elements. */
-    [[nodiscard]] bool is_empty() const { return m_size == 0; }
+    [[nodiscard]] bool empty() const { return m_size == 0; }
 
     /** Returns the number of live elements. */
     [[nodiscard]] std::size_t size() const { return m_size; }
@@ -171,7 +171,7 @@ template <typename Item> class Vector {
         if (m_size == m_capacity) {
             reserve(m_capacity * 2 + 1);
         }
-        std::span<Item>{m_items, m_size}[m_size++] = new_item;
+        std::span<Item>{m_items, m_capacity}[m_size++] = new_item;
     }
 
     /** Appends `new_item` by move, growing the buffer if necessary. */
@@ -179,14 +179,19 @@ template <typename Item> class Vector {
         if (m_size == m_capacity) {
             reserve(m_capacity * 2 + 1);
         }
-        std::span<Item>{m_items, m_size}[m_size++] = std::move(new_item);
+        std::span<Item>{m_items, m_capacity}[m_size++] = std::move(new_item);
     }
 
     /** Removes the last element by decrementing the size counter. */
     void pop_back() { m_size--; }
 
     /** Returns a const reference to the last live element. Undefined if empty. */
-    [[nodiscard]] const Item &back() const { return std::span<Item>{m_items, m_size}[m_size - 1]; }
+    [[nodiscard]] Item &front() { return std::span<Item>{m_items, m_capacity}[0]; }
+    [[nodiscard]] const Item &front() const { return std::span<Item>{m_items, m_capacity}[0]; }
+    [[nodiscard]] Item &back() { return std::span<Item>{m_items, m_capacity}[m_size - 1]; }
+    [[nodiscard]] const Item &back() const {
+        return std::span<Item>{m_items, m_capacity}[m_size - 1];
+    }
 
     // ── Iterators ─────────────────────────────────────────────────────────────
     using iterator = Item *;
@@ -195,8 +200,10 @@ template <typename Item> class Vector {
     iterator begin() { return &std::span<Item>{m_items, m_size}[0]; }
     [[nodiscard]] const_iterator begin() const { return &std::span<Item>{m_items, m_size}[0]; }
 
-    iterator end() { return &std::span<Item>{m_items, m_size}[size()]; }
-    [[nodiscard]] const_iterator end() const { return &std::span<Item>{m_items, m_size}[size()]; }
+    iterator end() { return &std::span<Item>{m_items, m_capacity}[size()]; }
+    [[nodiscard]] const_iterator end() const {
+        return &std::span<Item>{m_items, m_capacity}[size()];
+    }
 };
 
 } // namespace dsa
