@@ -77,9 +77,9 @@ template <typename Item> class List {
      * move assignment operator
      **/
     List &operator=(List &&rhs) noexcept {
-        std::swap(this->m_head, rhs.m_head);
-        std::swap(this->m_tail, rhs.m_tail);
-        std::swap(this->m_size, rhs.m_size);
+        std::swap(m_head, rhs.m_head);
+        std::swap(m_tail, rhs.m_tail);
+        std::swap(m_size, rhs.m_size);
         return *this;
     }
 
@@ -132,6 +132,15 @@ template <typename Item> class List {
         const_iterator operator++(int) {
             const_iterator old = *this;
             ++(*this);
+            return old;
+        }
+        const_iterator &operator--() {
+            this->p_current = this->p_current->m_prev;
+            return *this;
+        }
+        const_iterator operator--(int) {
+            iterator old = *this;
+            --(*this);
             return old;
         }
         bool operator==(const const_iterator &rhs) { return p_current == rhs.p_current; }
