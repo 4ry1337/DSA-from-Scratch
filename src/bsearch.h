@@ -1,31 +1,34 @@
 #ifndef BSEARCH_H_
 #define BSEARCH_H_
 
+#include "result.h"
+#include "vector.h"
 #include <cstddef>
-#include <optional>
-#include <vector>
 
 namespace dsa {
 
 template <typename Comparable>
-std::optional<std::size_t> binary_search(const std::vector<Comparable> &vec, const Comparable &q) {
-    if (vec.size() == 0)
-        return std::nullopt;
-
-    std::size_t low = 0, high = vec.size() - 1;
-
-    while (low <= high) {
-        std::size_t mid = low + (high - low) / 2;
-        if (vec[mid] > q) {
-            high = mid - 1;
-        } else if (vec[mid] < q) {
-            low = mid + 1;
-        } else {
-            return std::make_optional(mid);
-        }
+Result<std::size_t, std::size_t> binary_search(const Vector<Comparable> &vec, const Comparable &q) {
+    if (vec.size() == 0) {
+        return Result<std::size_t, std::size_t>::err(0);
     }
 
-    return std::nullopt;
+    std::size_t size = vec.size();
+    std::size_t base = 0;
+
+    while (size > 1) {
+        std::size_t half = size / 2;
+        std::size_t mid = base + half;
+        if (q > vec[mid]) {
+            base = mid;
+        }
+        size -= half;
+    }
+
+    if (vec[base] == q) {
+        return Result<std::size_t, std::size_t>::ok(base);
+    }
+    return Result<std::size_t, std::size_t>::err(base + (vec[base] < q));
 }
 
 } // namespace dsa
