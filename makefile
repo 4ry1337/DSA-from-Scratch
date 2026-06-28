@@ -2,14 +2,14 @@ TARGET_EXEC := main
 TEST_EXEC := test_runner
 
 BUILD_DIR := ./build
-SRC_DIRS := ./src
+SRC_DIR := ./src
 
 DEBUG_FLAGS := -g3 -O0
 RELEASE_FLAGS := -O3 -DNDEBUG
 
-CXXFLAGS := -Wall -Wextra -Wpedantic $(DEBUG_FLAGS)
+CXXFLAGS := -std=c++20 -Wall -Wextra -Wpedantic $(DEBUG_FLAGS)
 
-SRCS := $(shell find $(SRC_DIRS) -name '*.cpp' -or -name '*.c' -or -name '*.s')
+SRCS := $(shell find $(SRC_DIR) -name '*.cpp' -or -name '*.c' -or -name '*.s')
 TEST_SRCS := $(shell find tests -name '*.cpp')
 
 OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
@@ -17,7 +17,7 @@ TEST_OBJS := $(TEST_SRCS:%=$(BUILD_DIR)/%.o)
 
 DEPS := $(OBJS:.o=.d) $(TEST_OBJS:.o=.d)
 
-INC_DIRS := $(shell find $(SRC_DIRS) -type d)
+INC_DIRS := $(shell find $(SRC_DIR) -type d)
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
 # -MMD -MP generate .d dependency files alongside .o files
@@ -50,10 +50,10 @@ test: $(BUILD_DIR)/$(TEST_EXEC)
 	./$(BUILD_DIR)/$(TEST_EXEC)
 
 lint:
-	clang-tidy $(SRCS)
+	clang-tidy --header-filter=".*"  $(SRCS) $(shell find $(SRC_DIR) -name '*.h')
 
 fmt:
-	clang-format -i $(SRCS) $(shell find $(SRC_DIRS) -name '*.h')
+	clang-format -i $(SRCS) $(shell find $(SRC_DIR) -name '*.h')
 
 memcheck: $(BUILD_DIR)/$(TARGET_EXEC)
 	valgrind --leak-check=full ./$(BUILD_DIR)/$(TARGET_EXEC)

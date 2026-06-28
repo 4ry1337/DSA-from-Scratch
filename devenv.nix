@@ -26,6 +26,7 @@
     valgrind
     doxygen
     graphviz
+    microsoft-gsl
   ];
 
   # https://devenv.sh/languages/

@@ -1,6 +1,6 @@
-Checks: "cppcoreguidelines-*"
+Checks: "bugprone-*,google-*,modernize-*,performance-*,cppcoreguidelines-*,-modernize-use-trailing-return-type,-modernize-use-auto"
 # Other profiles:
-# bugprone-*,modernize-*,performance-*
+# 
 # *
 WarningsAsErrors: ""
 HeaderFilterRegex: ".*"
