@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <gsl/pointers>
+#include <initializer_list>
 
 namespace dsa {
 
@@ -38,6 +39,11 @@ template <typename Item> class List {
     explicit List() : m_head(new Node), m_tail(new Node) {
         m_head->m_next = m_tail;
         m_tail->m_prev = m_head;
+    };
+    List(std::initializer_list<Item> items) : List() {
+        for (const Item &item : items) {
+            push_back(item);
+        }
     };
     /**
      * Destructor
