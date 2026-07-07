@@ -3,6 +3,7 @@ TEST_EXEC := test_runner
 
 BUILD_DIR := ./build
 SRC_DIR := ./src
+TEST_DIR := ./tests
 
 DEBUG_FLAGS := -g3 -O0
 RELEASE_FLAGS := -O3 -DNDEBUG
@@ -10,7 +11,7 @@ RELEASE_FLAGS := -O3 -DNDEBUG
 CXXFLAGS := -std=c++20 -Wall -Wextra -Wpedantic $(DEBUG_FLAGS)
 
 SRCS := $(shell find $(SRC_DIR) -name '*.cpp' -or -name '*.c' -or -name '*.s')
-TEST_SRCS := $(shell find tests -name '*.cpp')
+TEST_SRCS := $(shell find $(TEST_DIR) -name '*.cpp')
 
 OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
 TEST_OBJS := $(TEST_SRCS:%=$(BUILD_DIR)/%.o)
